@@ -22,6 +22,7 @@
     const url = window.location.href;
     const queryParams = getUrlParams(url);
     const specifiedTimezone = queryParams.timezone || 'America/New_York'; // Default to New York if timezone param is not provided
+    console.log(url, queryParams, specifiedTimezone);
     const currentTime = getTimeInTimeZone(specifiedTimezone);
 
     document.write(currentTime);
