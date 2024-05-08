@@ -25,10 +25,15 @@
         return params;
     }
 
-    const queryParams = getUrlParams(window.location.search);
-    const specifiedTimezone = queryParams.timezone || 'America/New_York'; // Default to New York if timezone param is not provided
-    const currentTime = getTimeInTimeZone(specifiedTimezone);
-    const shortTz = getTimezoneShortName(specifiedTimezone);
+    function render() {
+        const queryParams = getUrlParams(window.location.search);
+        const specifiedTimezone = queryParams.timezone || 'America/New_York';
+        const currentTime = getTimeInTimeZone(specifiedTimezone);
+        const shortTz = getTimezoneShortName(specifiedTimezone);
 
-    document.write(currentTime + ' ' + shortTz);
+        document.body.innerHTML = currentTime + ' ' + shortTz;
+    }
+
+    document.onload = render;
+    setInterval(render, 5000);
 </script>
