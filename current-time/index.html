@@ -10,6 +10,12 @@
         return time;
     }
 
+    function getTimezoneShortName(timezone) {
+        const options = { timeZone: timezone, timeZoneName: 'short' };
+        const timezoneName = new Date().toLocaleTimeString('en-US', options);
+        return timezoneName;
+    }
+
     function getUrlParams(url) {
         const params = {};
         const urlParams = new URLSearchParams(url);
@@ -22,6 +28,7 @@
     const queryParams = getUrlParams(window.location.search);
     const specifiedTimezone = queryParams.timezone || 'America/New_York'; // Default to New York if timezone param is not provided
     const currentTime = getTimeInTimeZone(specifiedTimezone);
+    const shortTz = getTimezoneShortName(specifiedTimezone);
 
-    document.write(currentTime);
+    document.write(currentTime + ' ' + shortTz);
 </script>
