@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generative Mandala</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #fff9db; /* Faint yellow background */
+        }
+        canvas {
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+    </style>
+</head>
+<body>
+    <canvas id="mandalaCanvas" width="800" height="800"></canvas>
+    <script>
+        function drawCircle(ctx, centerX, centerY, radius) {
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI, false);
+            ctx.strokeStyle = '#654321'; // Dark brown color
+            ctx.lineWidth = 2;
+            ctx.stroke();
+        }
+
+        function generateMandala(ctx, numLayers, canvasWidth, canvasHeight) {
+            const centerX = canvasWidth / 2;
+            const centerY = canvasHeight / 2;
+            const baseRadius = Math.random() * (0.2 - 0.05) + 0.05;
+
+            for (let layer = 0; layer < numLayers; layer++) {
+                const numCircles = Math.floor(Math.random() * (12 - 6 + 1)) + 6;
+                const angleStep = 2 * Math.PI / numCircles;
+
+                for (let i = 0; i < numCircles; i++) {
+                    const angle = i * angleStep;
+                    const radius = baseRadius * (layer + 1) * (Math.random() * (1.5 - 0.5) + 0.5);
+                    const circleRadius = baseRadius * (Math.random() * (1.5 - 0.5) + 0.5);
+                    const circleCenterX = centerX + radius * Math.cos(angle);
+                    const circleCenterY = centerY + radius * Math.sin(angle);
+
+                    drawCircle(ctx, circleCenterX, circleCenterY, circleRadius);
+
+                    // Add mirrored circles
+                    drawCircle(ctx, centerX - (circleCenterX - centerX), circleCenterY, circleRadius);
+                    drawCircle(ctx, circleCenterX, centerY - (circleCenterY - centerY), circleRadius);
+                    drawCircle(ctx, centerX - (circleCenterX - centerX), centerY - (circleCenterY - centerY), circleRadius);
+                }
+            }
+        }
+
+        window.onload = () => {
+            const canvas = document.getElementById('mandalaCanvas');
+            const ctx = canvas.getContext('2d');
+            const numLayers = Math.floor(Math.random() * (10 - 4 + 1)) + 4;
+            generateMandala(ctx, numLayers, canvas.width, canvas.height);
+        };
+    </script>
+</body>
+</html>
