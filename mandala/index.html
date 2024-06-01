@@ -9,45 +9,75 @@
             display: flex;
             justify-content: center;
             align-items: center;
+            flex-direction: column;
             height: 100vh;
             margin: 0;
             background-color: #fff9db; /* Faint yellow background */
         }
         canvas {
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            width: calc(min(90vw, 90vh));
+            height: calc(min(90vw, 90vh));
+        }
+        #seedDisplay, #seedDisplay a {
+            margin-top: 20px;
+            font-family: serif;
+            font-style: italic;
+            letter-spacing: 0.05rem;
+            text-decoration: none;
+            border-bottom: 1px dashed #654321;
+            color: #654321;
         }
     </style>
 </head>
 <body>
-    <canvas id="mandalaCanvas" width="800" height="800"></canvas>
+    <canvas id="mandalaCanvas" width="2000" height="2000"></canvas>
+    <div id="seedDisplay"></div>
     <script>
         let currentMandala = [];
         let nextMandala = [];
         let animating = false;
         let animationStartTime;
         const animationDuration = 2000; // 2 seconds
+        let seed;
+
+        // Function to generate Fibonacci numbers up to a certain length
+        function generateFibonacci(length) {
+            const fib = [0, 1];
+            for (let i = 2; i < length; i++) {
+                fib.push(fib[i - 1] + fib[i - 2]);
+            }
+            return fib;
+        }
+
+        // Random number generator with seed
+        function randomWithSeed(seed) {
+            const x = Math.sin(seed++) * 10000;
+            return x - Math.floor(x);
+        }
 
         function drawCircle(ctx, centerX, centerY, radius, alpha = 1) {
             ctx.beginPath();
             ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI, false);
             ctx.strokeStyle = `rgba(101, 67, 33, ${alpha})`; // Dark brown color with alpha
-            ctx.lineWidth = 2;
+            ctx.lineWidth = 4;
             ctx.stroke();
         }
 
-        function generateMandala(numCircles, baseRadius, canvasWidth, canvasHeight) {
+        function generateMandala(canvasWidth, canvasHeight, seed) {
+            const numCircles = 2 + Math.floor(randomWithSeed(seed) * 10);
             const centerX = canvasWidth / 2;
             const centerY = canvasHeight / 2;
-
+            const fibNumbers = generateFibonacci(13).slice(3); // Generate first 20 Fibonacci numbers
             const mandala = [];
             const angleStep = 2 * Math.PI / numCircles;
 
             for (let i = 0; i < numCircles; i++) {
                 const angle = i * angleStep;
-                const radius = baseRadius * (Math.random() * (1.5 - 0.5) + 0.5);
-                const circleRadius = baseRadius * (Math.random() * (1.5 - 0.5) + 0.5);
+                const radius = fibNumbers[Math.floor(randomWithSeed(seed++) * fibNumbers.length)] * 6; // Scale factor
+                const circleRadius = fibNumbers[Math.floor(randomWithSeed(seed++) * fibNumbers.length)] * 1.5; // Scale factor
                 const circleCenterX = centerX + radius * Math.cos(angle);
-                const circleCenterY = centerY + radius * Math.sin(angle);
+                const circleCenterY = circleCenterX; //centerY + radius * Math.sin(angle);
 
                 mandala.push({ x: circleCenterX, y: circleCenterY, r: circleRadius });
                 mandala.push({ x: centerX - (circleCenterX - centerX), y: circleCenterY, r: circleRadius });
@@ -81,26 +111,46 @@
             requestAnimationFrame(() => morphMandala(ctx, startTime));
         }
 
-        function startMorphing(ctx, numCircles, baseRadius, canvasWidth, canvasHeight) {
-            nextMandala = generateMandala(numCircles, baseRadius, canvasWidth, canvasHeight);
+        function startMorphing(ctx, canvasWidth, canvasHeight) {
+            nextMandala = generateMandala(canvasWidth, canvasHeight, seed);
             animating = true;
             animationStartTime = Date.now();
             requestAnimationFrame(() => morphMandala(ctx, animationStartTime));
         }
 
+        function updateSeedDisplay(seed) {
+            if (seed < 0) seed = 100000;
+            if (seed > 100000) seed = 0;
+            const seedDisplay = document.getElementById('seedDisplay');
+            seedDisplay.innerHTML = `<a href="#${seed}" target="_blank">${seed}</a>`;
+        }
+
+        function getSeedFromHash() {
+            const hash = window.location.hash.substring(1);
+            return hash ? parseInt(hash, 10) : null;
+        }
+
         window.onload = () => {
             const canvas = document.getElementById('mandalaCanvas');
             const ctx = canvas.getContext('2d');
-            const numCircles = 3;
-            const baseRadius = 50;
-            currentMandala = generateMandala(numCircles, baseRadius, canvas.width, canvas.height);
-            drawMandala(ctx, currentMandala);
+            seed = getSeedFromHash();
 
-            setInterval(() => {
-                if (!animating) {
-                    startMorphing(ctx, numCircles, baseRadius, canvas.width, canvas.height);
-                }
-            }, 2000); // Change every 10 seconds
+            if (!seed || isNaN(seed)) {
+                seed = Math.floor(Math.random() * 100000) + 1;
+                setInterval(() => {
+                    if (!animating) {
+                        //seed = Math.floor(Math.random() * 100000) + 1;
+                        seed++;
+                        updateSeedDisplay(seed);
+                        startMorphing(ctx, canvas.width, canvas.height);
+                    }
+                }, 5000); // Change every 10 seconds
+            }
+
+            updateSeedDisplay(seed);
+
+            currentMandala = generateMandala(canvas.width, canvas.height, seed);
+            drawMandala(ctx, currentMandala);
         };
     </script>
 </body>
