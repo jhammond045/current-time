@@ -13,11 +13,13 @@
             height: 100vh;
             margin: 0;
             background-color: #fff9db; /* Faint yellow background */
+            overflow-y: hidden;
+            
         }
         canvas {
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
             width: calc(min(90vw, 90vh));
             height: calc(min(90vw, 90vh));
+            animation: rotate 60s linear infinite;
         }
         #seedDisplay, #seedDisplay a {
             margin-top: 20px;
@@ -27,6 +29,15 @@
             text-decoration: none;
             border-bottom: 1px dashed #654321;
             color: #654321;
+        }
+
+        @keyframes rotate {
+            from {
+                transform: rotate(0deg);
+            }
+            to {
+                transform: rotate(-360deg);
+            }
         }
     </style>
 </head>
@@ -66,23 +77,24 @@
 
         function generateMandala(canvasWidth, canvasHeight, seed) {
             const numCircles = 2 + Math.floor(randomWithSeed(seed) * 10);
+            const numAxes = 2 + Math.floor(randomWithSeed(seed) * 5); // Random number of axes between 2 and 6
             const centerX = canvasWidth / 2;
             const centerY = canvasHeight / 2;
             const fibNumbers = generateFibonacci(13).slice(3); // Generate first 20 Fibonacci numbers
             const mandala = [];
-            const angleStep = 2 * Math.PI / numCircles;
+            const angleStep = 2 * Math.PI / numAxes;
 
             for (let i = 0; i < numCircles; i++) {
-                const angle = i * angleStep;
                 const radius = fibNumbers[Math.floor(randomWithSeed(seed++) * fibNumbers.length)] * 6; // Scale factor
                 const circleRadius = fibNumbers[Math.floor(randomWithSeed(seed++) * fibNumbers.length)] * 1.5; // Scale factor
-                const circleCenterX = centerX + radius * Math.cos(angle);
-                const circleCenterY = circleCenterX; //centerY + radius * Math.sin(angle);
 
-                mandala.push({ x: circleCenterX, y: circleCenterY, r: circleRadius });
-                mandala.push({ x: centerX - (circleCenterX - centerX), y: circleCenterY, r: circleRadius });
-                mandala.push({ x: circleCenterX, y: centerY - (circleCenterY - centerY), r: circleRadius });
-                mandala.push({ x: centerX - (circleCenterX - centerX), y: centerY - (circleCenterY - centerY), r: circleRadius });
+                for (let j = 0; j < numAxes; j++) {
+                    const angle = j * angleStep;
+                    const circleCenterX = centerX + radius * Math.cos(angle);
+                    const circleCenterY = centerY + radius * Math.sin(angle);
+
+                    mandala.push({ x: circleCenterX, y: circleCenterY, r: circleRadius });
+                }
             }
             return mandala;
         }
@@ -139,7 +151,6 @@
                 seed = Math.floor(Math.random() * 100000) + 1;
                 setInterval(() => {
                     if (!animating) {
-                        //seed = Math.floor(Math.random() * 100000) + 1;
                         seed++;
                         updateSeedDisplay(seed);
                         startMorphing(ctx, canvas.width, canvas.height);
